@@ -193,58 +193,6 @@
             padding: 40px 20px;
             color: #999;
         }
-
-        .comment-section {
-            padding: 12px 15px;
-            background: #f9f9f9;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .comment-section textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 60px;
-            margin-bottom: 8px;
-        }
-
-        .comment-section input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .btn-save-comment {
-            background: #2196F3;
-            color: white;
-            width: 100%;
-        }
-
-        .btn-save-comment:active {
-            background: #1976D2;
-        }
-
-        .btn-save-comment:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .comment-saved {
-            background: #e8f5e9;
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            color: #2e7d32;
-            font-size: 13px;
-            margin-top: 8px;
-        }
     </style>
 </head>
 <body>
@@ -273,16 +221,6 @@
     <script>
         // Données embarquées
         let allAddresses = [];
-
-        // Google Form configuration
-        const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfDn1xE4qJvwGLOHVDTRfxudjpE20cswUBW-1v3DLSehu-mcA/formResponse';
-        const FORM_FIELDS = {
-            adresse: 'entry.11851887',
-            bureau: 'entry.1742144664',
-            nom: 'entry.1739525804',
-            commentaire: 'entry.583312393',
-            timestamp: 'entry.808815832'
-        };
 
         // Load data in chunks to avoid mobile parsing issues
         function loadData() {
@@ -12210,68 +12148,6 @@
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, '_blank');
         }
 
-        // Submit comment to Google Form
-        async function submitComment(addressId, adresse, bureau, nom, commentaire) {
-            const formData = new FormData();
-            formData.append(FORM_FIELDS.adresse, adresse);
-            formData.append(FORM_FIELDS.bureau, bureau);
-            formData.append(FORM_FIELDS.nom, nom || 'Non renseigné');
-            formData.append(FORM_FIELDS.commentaire, commentaire);
-            formData.append(FORM_FIELDS.timestamp, new Date().toISOString());
-
-            try {
-                await fetch(FORM_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: formData
-                });
-                return true;
-            } catch(e) {
-                console.error('Error submitting comment:', e);
-                return false;
-            }
-        }
-
-        // Handle comment save
-        async function saveComment(addressId) {
-            const commentInput = document.getElementById(`comment-${addressId}`);
-            const nomInput = document.getElementById(`nom-${addressId}`);
-            const saveBtn = document.getElementById(`save-btn-${addressId}`);
-            const savedMsg = document.getElementById(`saved-msg-${addressId}`);
-
-            const comment = commentInput.value.trim();
-            if (!comment) {
-                alert('Veuillez entrer un commentaire');
-                return;
-            }
-
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Envoi...';
-
-            const addr = allAddresses.find(a => a.id === addressId);
-            const success = await submitComment(
-                addressId,
-                addr.adresse_complete,
-                `Bureau ${addr.code_du_bureau_de_vote} - ${addr.libellé_du_bureau_de_vote}`,
-                nomInput.value.trim(),
-                comment
-            );
-
-            if (success) {
-                commentInput.value = '';
-                nomInput.value = '';
-                savedMsg.style.display = 'block';
-                setTimeout(() => {
-                    savedMsg.style.display = 'none';
-                }, 3000);
-            } else {
-                alert('Erreur lors de l'envoi du commentaire');
-            }
-
-            saveBtn.disabled = false;
-            saveBtn.textContent = '💾 Enregistrer';
-        }
-
         // Get filtered addresses
         function getFilteredAddresses() {
             const search = document.getElementById('search').value.toLowerCase();
@@ -12345,16 +12221,6 @@
                                 }
                             </div>
                         </div>
-                        <div class="comment-section">
-                            <input type="text" id="nom-${addr.id}" placeholder="Votre nom (optionnel)">
-                            <textarea id="comment-${addr.id}" placeholder="Ajouter un commentaire (ex: personne absente, intéressée, etc.)"></textarea>
-                            <button class="card-actions button btn-save-comment" id="save-btn-${addr.id}" onclick="saveComment('${addr.id}')">
-                                💾 Enregistrer
-                            </button>
-                            <div id="saved-msg-${addr.id}" class="comment-saved" style="display:none;">
-                                ✓ Commentaire enregistré !
-                            </div>
-                        </div>
                     </div>
                 `;
             });
@@ -12391,7 +12257,6 @@
         // Make functions global
         window.toggleDone = toggleDone;
         window.navigate = navigate;
-        window.saveComment = saveComment;
 
         // Initialize
         if (loadData()) {
